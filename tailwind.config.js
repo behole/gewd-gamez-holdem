@@ -1,13 +1,21 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
     "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Custom color palette can be added here
+        'poker-table': '#1a472a',  // Dark green for table
+        'poker-felt': '#35654d',   // Lighter green for felt
+      },
+      spacing: {
+        '128': '32rem',
+      },
+      borderRadius: {
+        'xl': '1rem',
+        '2xl': '1.5rem',
       },
     },
   },
