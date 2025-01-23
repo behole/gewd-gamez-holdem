@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+  }
+}
+
+@layer components {
+  .poker-card {
+    @apply w-16 h-24 bg-white rounded-lg flex flex-col items-center justify-center text-black shadow-lg;
+  }
+
+  .poker-card-back {
+    @apply w-16 h-24 bg-blue-600 rounded-lg flex items-center justify-center border-2 border-white;
+  }
+
+  .bet-button {
+    @apply px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors;
+  }
+
+  .action-button {
+    @apply px-6 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  .action-button-fold {
+    @apply action-button bg-red-600 hover:bg-red-700;
+  }
+
+  .action-button-call {
+    @apply action-button bg-blue-600 hover:bg-blue-700;
+  }
+
+  .action-button-raise {
+    @apply action-button bg-green-600 hover:bg-green-700;
+  }
+}
