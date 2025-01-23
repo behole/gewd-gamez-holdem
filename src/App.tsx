@@ -1,10 +1,12 @@
 import React from 'react';
-import { PokerTable } from '@/components/game/PokerTable';
+import { PokerTable } from './components/game/PokerTable';
 
-export const App: React.FC = () => {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <PokerTable isTrainingMode={true} />
+    <div className="min-h-screen bg-gray-900 text-white">
+      <main className="container mx-auto px-4 py-8">
+        <PokerTable isTrainingMode={true} />
+      </main>
     </div>
   );
 };
