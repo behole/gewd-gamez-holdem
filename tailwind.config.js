@@ -4,11 +4,12 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        'poker-table': '#1a472a',  // Dark green for table
-        'poker-felt': '#35654d',   // Lighter green for felt
+        'poker-table': '#1a472a',
+        'poker-felt': '#35654d',
       },
       spacing: {
         '128': '32rem',
