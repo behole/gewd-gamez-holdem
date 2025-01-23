@@ -4,23 +4,23 @@ import type { Player } from '@/types/poker';
 
 interface PlayerListProps {
   players: Player[];
-  activePlayer: string | null;
+  activePlayerIndex: number;
 }
 
-export const PlayerList: React.FC<PlayerListProps> = ({ players, activePlayer }) => {
+export const PlayerList: React.FC<PlayerListProps> = ({ players, activePlayerIndex }) => {
   const getPlayerPosition = (index: number): string => {
-    const positions = ['SB', 'BB', 'UTG', 'MP', 'CO', 'BTN'];
+    const positions = ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'];
     return positions[index % positions.length];
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4 w-full max-w-4xl mx-auto">
+    <div className="grid grid-cols-3 gap-4 my-8">
       {players.map((player, index) => (
         <PlayerTab
           key={player.id}
           player={player}
           position={getPlayerPosition(index)}
-          isActive={player.id === activePlayer}
+          isActive={index === activePlayerIndex}
         />
       ))}
     </div>

@@ -1,14 +1,23 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
     "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
     extend: {
       colors: {
-        // Custom color palette can be added here
+        'table-green': '#35654d',
+        'felt-green': '#267f45',
+        'card-white': '#ffffff',
+        'chip-red': '#e74c3c',
+        'chip-blue': '#3498db',
+        'chip-black': '#2c3e50'
       },
+      spacing: {
+        'card': '14rem',
+        'chip': '4rem'
+      }
     },
   },
   plugins: [],

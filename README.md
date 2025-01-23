@@ -1,65 +1,67 @@
 # Gewd Gamez Hold'em
 
-A minimalist, analytics-focused poker trainer for Texas Hold'em. This project aims to provide a clean, modern interface for poker training with powerful analytical tools.
+A minimalist, analytics-focused poker trainer for Texas Hold'em.
 
-## Features
+## Early MVP - v0.1.0
 
-- Clean, minimalist interface focusing on gameplay rather than visual decorations
-- Advanced analytics and training tools
-- Real-time pot odds calculator
-- Hand strength analysis
-- Player statistics tracking
-- Training mode with toggleable overlays
+Current features:
+- Basic game state management
+- Player positions (BTN, SB, BB)
+- AI Players with different skill levels and playing styles
+- Community cards display
+- Betting controls
+- Training mode with:
+  - Hand strength meter
+  - Pot odds calculator
+- Debug mode for development
 
-## Technical Stack
+### Components
+- PokerTable: Main game component
+- PlayerList: Manages player displays
+- CommunityCards: Shows community cards
+- PlayerControls: Betting interface
+- HandStrengthMeter: Training tool for hand evaluation
+- PotOddsCalculator: Training tool for betting decisions
 
-- React for web interface
-- React Native for mobile (planned)
-- Tailwind CSS for styling
-- Node.js backend (planned)
+### Tech Stack
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Vitest for testing
 
-## Project Structure
+## Running the Project
 
-```
-src/
-├── components/     # React components
-│   ├── game/      # Core game components
-│   ├── analytics/ # Analysis tools
-│   └── ui/        # Reusable UI components
-├── hooks/         # Custom React hooks
-├── utils/         # Utility functions
-└── styles/        # CSS and style configurations
-```
-
-## Development
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Setup
-
-1. Clone the repository:
-```bash
-git clone https://github.com/behole/gewd-gamez-holdem.git
-cd gewd-gamez-holdem
-```
-
-2. Install dependencies:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Start the development server:
+2. Start development server:
 ```bash
 npm run dev
 ```
 
+3. Run tests:
+```bash
+npm test
+```
+
+## Next Steps
+- [ ] Implement card dealing animations
+- [ ] Add hand evaluation logic
+- [ ] Implement AI decision making
+- [ ] Add game statistics tracking
+- [ ] Improve UI/UX with proper card symbols
+- [ ] Add hand history and replay functionality
+- [ ] Implement advanced training features
+
+## Development Guidelines
+- Use TypeScript for all new components
+- Write tests for new features
+- Follow the existing component structure
+- Use Tailwind CSS for styling
+- Keep accessibility in mind
+
 ## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-MIT
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

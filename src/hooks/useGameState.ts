@@ -1,156 +1,143 @@
 import { useState, useCallback } from 'react';
-import type { GameState, Player, Card, PlayerAction } from '@/types/poker';
+import type { GameState, Card, Player } from '@/types/poker';
 
-const INITIAL_STATE: GameState = {
-  players: [],
+const DEFAULT_PLAYERS: Player[] = [
+  {
+    id: 'human1',
+    name: 'You',
+    stack: 1000,
+    position: 0,
+    holeCards: [],
+    isActive: true,
+    isBetting: false,
+    betAmount: 0,
+    isDealer: true,
+    isSmallBlind: false,
+    isBigBlind: false,
+    isAI: false
+  },
+  {
+    id: 'ai1',
+    name: 'AI Bob',
+    stack: 1000,
+    position: 1,
+    holeCards: [],
+    isActive: true,
+    isBetting: false,
+    betAmount: 0,
+    isDealer: false,
+    isSmallBlind: true,
+    isBigBlind: false,
+    isAI: true,
+    aiLevel: 'beginner',
+    aiStyle: 'tight'
+  },
+  {
+    id: 'ai2',
+    name: 'AI Alice',
+    stack: 1000,
+    position: 2,
+    holeCards: [],
+    isActive: true,
+    isBetting: false,
+    betAmount: 0,
+    isDealer: false,
+    isSmallBlind: false,
+    isBigBlind: true,
+    isAI: true,
+    aiLevel: 'intermediate',
+    aiStyle: 'aggressive'
+  }
+];
+
+const initialState: GameState = {
+  players: DEFAULT_PLAYERS,
   communityCards: [],
   pot: 0,
-  currentPhase: 'preflop',
-  activePlayer: null,
-  bigBlind: 100,
-  smallBlind: 50,
-  minRaise: 200,
+  activePlayerIndex: 0,
+  currentBettingRound: 'preflop',
+  minBet: 10,
+  currentBet: 0,
+  deck: [],
   isTrainingMode: false,
+  bigBlind: 20,
+  smallBlind: 10
 };
 
-interface UseGameStateReturn {
-  gameState: GameState;
-  startNewHand: () => void;
-  dealCards: () => void;
-  handlePlayerAction: (playerId: string, action: PlayerAction, amount?: number) => void;
-  advancePhase: () => void;
-  toggleTrainingMode: () => void;
-}
+export const useGameState = (customInitialState: Partial<GameState> = {}) => {
+  const [gameState, setGameState] = useState<GameState>({
+    ...initialState,
+    ...customInitialState,
+    players: customInitialState.players || DEFAULT_PLAYERS
+  });
 
-export const useGameState = (): UseGameStateReturn => {
-  const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
-
-  const startNewHand = useCallback(() => {
-    setGameState((prev) => ({
-      ...INITIAL_STATE,
-      isTrainingMode: prev.isTrainingMode,
-      players: prev.players.map((player) => ({
-        ...player,
-        holeCards: [],
-        isActive: true,
-        isBetting: false,
-        betAmount: 0,
-      })),
-    }));
-  }, []);
-
-  const dealCards = useCallback(() => {
-    // TODO: Implement card dealing logic
-    setGameState((prev) => {
-      // This is a placeholder that will be replaced with proper dealing logic
-      const updatedPlayers = prev.players.map((player) => ({
-        ...player,
-        holeCards: [
-          { suit: 'hearts', rank: 'A' },
-          { suit: 'spades', rank: 'K' },
-        ],
-      }));
-
-      return {
-        ...prev,
-        players: updatedPlayers,
-      };
-    });
-  }, []);
-
-  const handlePlayerAction = useCallback(
-    (playerId: string, action: PlayerAction, amount?: number) => {
-      setGameState((prev) => {
-        const playerIndex = prev.players.findIndex((p) => p.id === playerId);
-        if (playerIndex === -1) return prev;
-
-        const updatedPlayers = [...prev.players];
-        const player = updatedPlayers[playerIndex];
-
-        switch (action) {
-          case 'fold':
-            player.isActive = false;
-            break;
-          case 'check':
-            // No changes needed for check
-            break;
-          case 'call':
-            if (amount) {
-              player.betAmount = amount;
-              prev.pot += amount;
-            }
-            break;
-          case 'bet':
-          case 'raise':
-            if (amount) {
-              player.betAmount = amount;
-              prev.pot += amount;
-              prev.minRaise = amount * 2;
-            }
-            break;
-          case 'all-in':
-            player.betAmount = player.stack;
-            prev.pot += player.stack;
-            player.stack = 0;
-            break;
-        }
-
-        return {
-          ...prev,
-          players: updatedPlayers,
-          lastAction: {
-            playerId,
-            action,
-            amount,
-          },
-        };
-      });
-    },
-    []
-  );
-
-  const advancePhase = useCallback(() => {
-    setGameState((prev) => {
-      let nextPhase: GameState['currentPhase'] = prev.currentPhase;
-      
-      switch (prev.currentPhase) {
-        case 'preflop':
-          nextPhase = 'flop';
-          break;
-        case 'flop':
-          nextPhase = 'turn';
-          break;
-        case 'turn':
-          nextPhase = 'river';
-          break;
-        case 'river':
-          nextPhase = 'showdown';
-          break;
-        case 'showdown':
-          // Reset to preflop for new hand
-          return { ...INITIAL_STATE, isTrainingMode: prev.isTrainingMode };
-      }
-
-      return {
-        ...prev,
-        currentPhase: nextPhase,
-      };
-    });
-  }, []);
-
-  const toggleTrainingMode = useCallback(() => {
+  const dealCards = useCallback((playerIndex: number, cards: Card[]) => {
     setGameState((prev) => ({
       ...prev,
-      isTrainingMode: !prev.isTrainingMode,
+      players: prev.players.map((player, index) =>
+        index === playerIndex
+          ? { ...player, holeCards: cards }
+          : player
+      )
     }));
+  }, []);
+
+  const dealCommunityCard = useCallback((card: Card) => {
+    setGameState((prev) => ({
+      ...prev,
+      communityCards: [...prev.communityCards, card]
+    }));
+  }, []);
+
+  const updatePlayerBet = useCallback((playerIndex: number, amount: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      players: prev.players.map((player, index) =>
+        index === playerIndex
+          ? {
+              ...player,
+              betAmount: amount,
+              stack: player.stack - (amount - player.betAmount)
+            }
+          : player
+      ),
+      pot: prev.pot + (amount - prev.players[playerIndex].betAmount)
+    }));
+  }, []);
+
+  const nextPlayer = useCallback(() => {
+    setGameState((prev) => ({
+      ...prev,
+      activePlayerIndex: (prev.activePlayerIndex + 1) % prev.players.length
+    }));
+  }, []);
+
+  const nextBettingRound = useCallback(() => {
+    setGameState((prev) => {
+      const rounds: Record<string, GameState['currentBettingRound']> = {
+        'preflop': 'flop',
+        'flop': 'turn',
+        'turn': 'river',
+        'river': 'showdown'
+      };
+      
+      return {
+        ...prev,
+        currentBettingRound: rounds[prev.currentBettingRound] || 'showdown',
+        players: prev.players.map(player => ({
+          ...player,
+          betAmount: 0
+        }))
+      };
+    });
   }, []);
 
   return {
     gameState,
-    startNewHand,
     dealCards,
-    handlePlayerAction,
-    advancePhase,
-    toggleTrainingMode,
+    dealCommunityCard,
+    updatePlayerBet,
+    nextPlayer,
+    nextBettingRound
   };
 };

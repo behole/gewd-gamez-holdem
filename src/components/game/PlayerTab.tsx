@@ -33,23 +33,15 @@ export const PlayerTab: React.FC<PlayerTabProps> = ({
   };
 
   return (
-    <div
-      className={`relative rounded-lg p-4 ${
-        isActive ? 'bg-gray-700 ring-2 ring-green-500' : 'bg-gray-800'
-      }`}
-    >
+    <div className={`relative rounded-lg p-4 ${isActive ? 'bg-gray-700 ring-2 ring-green-500' : 'bg-gray-800'}`}>
       {/* Status indicator */}
-      <div
-        className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getStatusIndicator()}`}
-      />
+      <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getStatusIndicator()}`} />
 
       {/* Player info */}
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between items-center">
           <span className="font-medium">{player.name}</span>
-          <span
-            className={`text-xs px-2 py-1 rounded ${getPositionClass()} text-white`}
-          >
+          <span className={`text-xs px-2 py-1 rounded ${getPositionClass()} text-white`}>
             {position}
           </span>
         </div>

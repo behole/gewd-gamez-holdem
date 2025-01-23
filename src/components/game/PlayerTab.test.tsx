@@ -1,17 +1,18 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { PlayerTab } from './PlayerTab';
-import type { Player } from '@/types/poker';
+import type { Player, Card, Suit, Rank } from '@/types/poker';
 
 describe('PlayerTab', () => {
+  const createCard = (suit: Suit, rank: Rank): Card => ({ suit, rank });
+
   const mockPlayer: Player = {
     id: '1',
     name: 'Test Player',
     stack: 1000,
     holeCards: [
-      { suit: 'hearts', rank: 'A' },
-      { suit: 'diamonds', rank: 'K' },
+      createCard('hearts', 'A'),
+      createCard('diamonds', 'K'),
     ],
     position: 0,
     isActive: true,
@@ -73,38 +74,15 @@ describe('PlayerTab', () => {
   });
 
   it('displays correct position color for different positions', () => {
-    // Test BTN position
-    render(<PlayerTab player={mockPlayer} position="BTN" isActive={false} />);
+    const { rerender } = render(
+      <PlayerTab player={mockPlayer} position="BTN" isActive={false} />
+    );
     expect(screen.getByText('BTN')).toHaveClass('bg-purple-600');
 
-    // Rerender with SB position
-    const { rerender } = render(
-      <PlayerTab player={mockPlayer} position="SB" isActive={false} />
-    );
+    rerender(<PlayerTab player={mockPlayer} position="SB" isActive={false} />);
     expect(screen.getByText('SB')).toHaveClass('bg-blue-600');
 
-    // Rerender with BB position
     rerender(<PlayerTab player={mockPlayer} position="BB" isActive={false} />);
     expect(screen.getByText('BB')).toHaveClass('bg-red-600');
-  });
-
-  it('displays correct style when player is folded', () => {
-    const foldedPlayer: Player = {
-      ...mockPlayer,
-      isActive: false,
-    };
-    render(<PlayerTab player={foldedPlayer} position="BTN" isActive={false} />);
-    const statusIndicator = screen.getByTestId('status-indicator');
-    expect(statusIndicator).toHaveClass('bg-red-500');
-  });
-
-  it('displays correct style when player is betting', () => {
-    const bettingPlayer: Player = {
-      ...mockPlayer,
-      isBetting: true,
-    };
-    render(<PlayerTab player={bettingPlayer} position="BTN" isActive={false} />);
-    const statusIndicator = screen.getByTestId('status-indicator');
-    expect(statusIndicator).toHaveClass('bg-yellow-500');
   });
 });

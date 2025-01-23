@@ -1,54 +1,28 @@
 import React, { useState } from 'react';
-import { BetSlider } from '../ui/BetSlider';
+import { BetSlider } from '@/components/ui/BetSlider';
 import type { PlayerAction } from '@/types/poker';
 
 interface PlayerControlsProps {
   onAction: (action: PlayerAction, amount?: number) => void;
+  currentBet: number;
   minBet: number;
-  pot: number;
-  isActive: boolean;
-  toCall?: number;
-  canCheck?: boolean;
+  canCheck: boolean;
+  playerStack: number;
+  playerBet: number;
 }
 
 export const PlayerControls: React.FC<PlayerControlsProps> = ({
   onAction,
+  currentBet,
   minBet,
-  pot,
-  isActive,
-  toCall = 0,
-  canCheck = true,
+  canCheck,
+  playerStack,
+  playerBet
 }) => {
-  const [betAmount, setBetAmount] = useState<number>(minBet);
-  const [showBetSlider, setShowBetSlider] = useState<boolean>(false);
+  const [showBetSlider, setShowBetSlider] = useState(false);
+  const [betAmount, setBetAmount] = useState(minBet);
 
-  const handleAction = (action: PlayerAction) => {
-    if (action === 'bet' || action === 'raise') {
-      setShowBetSlider(true);
-      return;
-    }
-
-    onAction(action);
-    setShowBetSlider(false);
-  };
-
-  const handleBetConfirm = () => {
-    onAction('bet', betAmount);
-    setShowBetSlider(false);
-  };
-
-  const handleBetCancel = () => {
-    setBetAmount(minBet);
-    setShowBetSlider(false);
-  };
-
-  if (!isActive) {
-    return (
-      <div className="text-center text-gray-500 italic">
-        Waiting for your turn...
-      </div>
-    );
-  }
+  const toCall = currentBet - playerBet;
 
   return (
     <div className="space-y-4">
@@ -57,18 +31,21 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
           <BetSlider
             value={betAmount}
             onChange={setBetAmount}
-            min={minBet}
-            max={pot * 2}
+            min={Math.max(minBet, toCall)}
+            max={playerStack}
           />
           <div className="flex justify-center space-x-4">
             <button
-              onClick={handleBetConfirm}
+              onClick={() => {
+                onAction(toCall > 0 ? 'raise' : 'bet', betAmount);
+                setShowBetSlider(false);
+              }}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
             >
               Confirm ${betAmount}
             </button>
             <button
-              onClick={handleBetCancel}
+              onClick={() => setShowBetSlider(false)}
               className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
             >
               Cancel
@@ -78,29 +55,33 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       ) : (
         <div className="flex justify-center space-x-4">
           <button
-            onClick={() => handleAction('fold')}
+            onClick={() => onAction('fold')}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
             Fold
           </button>
+          
           {canCheck ? (
             <button
-              onClick={() => handleAction('check')}
+              onClick={() => onAction('check')}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
               Check
             </button>
           ) : (
             <button
-              onClick={() => handleAction('call')}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={() => onAction('call')}
+              disabled={playerStack < toCall}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
             >
               Call ${toCall}
             </button>
           )}
+          
           <button
-            onClick={() => handleAction('bet')}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            onClick={() => setShowBetSlider(true)}
+            disabled={playerStack <= toCall}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
           >
             {toCall > 0 ? 'Raise' : 'Bet'}
           </button>
