@@ -1,22 +1,24 @@
 import React from 'react';
-import type { Player } from '@/types/poker';
+import type { Player, Card } from '@/types/poker';
 
 interface PlayerTabProps {
   player: Player;
   position: string;
   isActive: boolean;
+  currentPlayerId: string;
 }
 
 export const PlayerTab: React.FC<PlayerTabProps> = ({
   player,
   position,
   isActive,
+  currentPlayerId,
 }) => {
   const getStatusIndicator = () => {
     if (!player.isActive) return 'bg-red-500'; // Folded
-    if (player.isBetting) return 'bg-yellow-500'; // Betting
-    if (isActive) return 'bg-green-500'; // Active
-    return 'bg-gray-500'; // Waiting
+    if (isActive) return 'bg-green-500'; // Active turn
+    if (player.hasActed) return 'bg-yellow-500'; // Has acted this round
+    return 'bg-gray-500'; // Waiting to act
   };
 
   const getPositionClass = () => {
@@ -30,6 +32,10 @@ export const PlayerTab: React.FC<PlayerTabProps> = ({
       default:
         return 'bg-gray-600';
     }
+  };
+
+  const canSeeCard = (card: Card) => {
+    return card.visibleTo?.includes(currentPlayerId) || false;
   };
 
   return (
@@ -58,7 +64,7 @@ export const PlayerTab: React.FC<PlayerTabProps> = ({
               key={index}
               className="w-8 h-12 bg-white rounded flex items-center justify-center text-black"
             >
-              {player.isActive ? `${card.rank}${card.suit.charAt(0)}` : '?'}
+              {canSeeCard(card) ? `${card.rank}${card.suit.charAt(0)}` : '?'}
             </div>
           ))}
         </div>

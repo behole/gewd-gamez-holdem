@@ -31,17 +31,16 @@ export const useDeck = (): UseDeckReturn => {
     return deck[deck.length - 1];
   }, [deck]);
 
-  const dealCards = useCallback(
-    (numCards: number): Card[] => {
-      const cards: Card[] = [];
-      for (let i = 0; i < numCards && deck.length > 0; i++) {
-        const card = dealCard();
-        if (card) cards.push(card);
+  const dealCards = useCallback((numCards: number): Card[] => {
+    const cards: Card[] = [];
+    for (let i = 0; i < numCards; i++) {
+      const card = dealCard();
+      if (card) {
+        cards.push(card);
       }
-      return cards;
-    },
-    [dealCard, deck.length]
-  );
+    }
+    return cards;
+  }, [dealCard]);
 
   const resetDeck = useCallback(() => {
     setDeck(createDeck());

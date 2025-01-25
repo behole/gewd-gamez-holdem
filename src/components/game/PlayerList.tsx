@@ -5,9 +5,14 @@ import type { Player } from '@/types/poker';
 interface PlayerListProps {
   players: Player[];
   activePlayerIndex: number;
+  currentPlayerId: string;
 }
 
-export const PlayerList: React.FC<PlayerListProps> = ({ players, activePlayerIndex }) => {
+export const PlayerList: React.FC<PlayerListProps> = ({
+  players,
+  activePlayerIndex,
+  currentPlayerId
+}) => {
   const getPlayerPosition = (index: number): string => {
     const positions = ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'];
     return positions[index % positions.length];
@@ -21,6 +26,7 @@ export const PlayerList: React.FC<PlayerListProps> = ({ players, activePlayerInd
           player={player}
           position={getPlayerPosition(index)}
           isActive={index === activePlayerIndex}
+          currentPlayerId={currentPlayerId}
         />
       ))}
     </div>

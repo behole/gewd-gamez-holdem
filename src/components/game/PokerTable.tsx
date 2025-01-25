@@ -5,8 +5,7 @@ import { PlayerControls } from './PlayerControls';
 import { HandStrengthMeter } from '@/components/analytics/HandStrengthMeter';
 import { PotOddsCalculator } from '@/components/analytics/PotOddsCalculator';
 import { useGameState } from '@/hooks/useGameState';
-import { useBetting } from '@/hooks/useBetting';
-import { HandEvaluator } from '@/utils/handEvaluator';
+import { useDeck } from '@/hooks/useDeck';
 import type { GameState, PlayerAction } from '@/types/poker';
 
 interface PokerTableProps {
@@ -19,14 +18,45 @@ export const PokerTable: React.FC<PokerTableProps> = ({
   isTrainingMode = false,
 }) => {
   const [showDebug, setShowDebug] = useState(false);
+  const { dealCards: dealFromDeck, shuffleDeck, resetDeck } = useDeck();
   const {
     gameState,
     dealCards,
     dealCommunityCard,
     updatePlayerBet,
     nextPlayer,
-    nextBettingRound
+    endRound,
+    startNewHand: startNewGameHand,
+    handleAIAction
   } = useGameState(initialState);
+
+  const startNewHand = React.useCallback(() => {
+    // Reset and shuffle the deck
+    resetDeck();
+    shuffleDeck();
+    
+    // Start new hand (posts blinds)
+    startNewGameHand();
+    
+    // Deal cards to players
+    gameState.players.forEach((_, index) => {
+      const cards = dealFromDeck(2);
+      dealCards(index, cards);
+    });
+  }, [dealCards, dealFromDeck, resetDeck, shuffleDeck, startNewGameHand, gameState.players]);
+
+  // Handle AI actions
+  React.useEffect(() => {
+    const currentPlayer = gameState.players[gameState.activePlayerIndex];
+    if (currentPlayer?.isAI && gameState.handState.handInProgress) {
+      // Add small delay for AI actions
+      const timeoutId = setTimeout(() => {
+        handleAIAction();
+        nextPlayer();
+      }, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [gameState.activePlayerIndex, gameState.players, gameState.handState.handInProgress, handleAIAction, nextPlayer]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
@@ -73,21 +103,73 @@ export const PokerTable: React.FC<PokerTableProps> = ({
           <PlayerList
             players={gameState.players || []}
             activePlayerIndex={gameState.activePlayerIndex}
+            currentPlayerId={gameState.players[0].id} // First player is always the human player
           />
         </div>
 
-        {/* Controls */}
+        {/* Game Controls */}
         <div className="mt-4">
-          <PlayerControls
-            onAction={(action: PlayerAction, amount?: number) => {
-              console.log('Player action:', action, amount);
-            }}
-            currentBet={gameState.currentBet || 0}
-            minBet={gameState.minBet || 10}
-            canCheck={!gameState.currentBet}
-            playerStack={gameState.players?.[gameState.activePlayerIndex]?.stack || 1000}
-            playerBet={gameState.players?.[gameState.activePlayerIndex]?.betAmount || 0}
-          />
+          {!gameState.handState.handInProgress ? (
+            <button
+              onClick={startNewHand}
+              className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-lg transition-colors"
+            >
+              Deal New Hand
+            </button>
+          ) : (
+            <PlayerControls
+              onAction={(action: PlayerAction, amount?: number) => {
+                console.log('Player action:', action, amount);
+                
+                // Handle player action
+                const currentPlayer = gameState.players[gameState.activePlayerIndex];
+                let actionAmount: number;
+
+                switch (action) {
+                  case 'fold':
+                    actionAmount = 0;
+                    break;
+                  case 'call':
+                    actionAmount = gameState.currentBet;
+                    break;
+                  case 'check':
+                    actionAmount = currentPlayer.betAmount; // Keep current bet
+                    break;
+                  case 'raise':
+                  case 'allin':
+                    actionAmount = amount || gameState.currentBet;
+                    break;
+                  default:
+                    actionAmount = 0;
+                }
+
+                // Update bet and advance to next player
+                updatePlayerBet(gameState.activePlayerIndex, actionAmount);
+                nextPlayer();
+
+                // Check if betting round is complete after the action
+                if (gameState.bettingRoundState.roundComplete) {
+                  // Deal community cards based on the current round before ending it
+                  const currentRound = gameState.currentBettingRound;
+                  if (currentRound === 'preflop') {
+                    // Deal flop (3 cards)
+                    const flopCards = dealFromDeck(3);
+                    flopCards.forEach(card => dealCommunityCard(card));
+                  } else if (currentRound === 'flop' || currentRound === 'turn') {
+                    // Deal turn or river (1 card)
+                    const card = dealFromDeck(1)[0];
+                    dealCommunityCard(card);
+                  }
+                  endRound();
+                }
+              }}
+              currentBet={gameState.currentBet || 0}
+              minBet={gameState.minBet || 10}
+              canCheck={!gameState.currentBet}
+              playerStack={gameState.players?.[gameState.activePlayerIndex]?.stack || 1000}
+              playerBet={gameState.players?.[gameState.activePlayerIndex]?.betAmount || 0}
+            />
+          )}
         </div>
 
         {/* Analytics (only shown in training mode) */}
